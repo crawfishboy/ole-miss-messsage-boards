@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ole Miss Message Boards</title>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --ole-miss-blue: #006BA6;
+            --ole-miss-red: #CE1126;
+            --bg-light: #f4f6f9;
+            --text-dark: #1a1a1a;
+            --text-muted: #666666;
+            --card-border: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            padding-bottom: 90px; /* Space for floating buttons */
+        }
+
+        /* App Header */
+        header {
+            background-color: var(--ole-miss-blue);
+            color: white;
+            padding: 16px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 3px 10px rgba(0, 107, 166, 0.3);
+            border-bottom: 4px solid var(--ole-miss-red);
+            display: flex;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Main Container */
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--ole-miss-blue);
+            margin: 24px 0 12px 4px;
+            letter-spacing: 1px;
+            font-weight: 800;
+        }
+
+        /* List & Cards Architecture */
+        .board-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .board-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+        }
+
+        /* Mobile Tap Effect */
+        .board-card:active {
+            transform: scale(0.98);
+            background-color: #fdfdfd;
+        }
+
+        .board-link {
+            display: flex;
+            align-items: center;
+            padding: 14px;
+            text-decoration: none;
+            color: inherit;
+            gap: 14px;
+        }
+
+        /* Logo Box Wrapper */
+        .logo-box {
+            width: 64px;
+            height: 64px;
+            min-width: 64px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 2px solid var(--ole-miss-blue);
+            padding: 4px;
+        }
+
+.logo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Ensures images keep their natural shape without cropping */
+    display: block;
+}
+
+ /* OLD CODE TO CONTAIN IMAGE
+ .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+*/
+
+/* .logo-box img {
+    width: 100%;
+    height: 100%;
+    /* This line forces your new square layout to fill the blue box completely */
+    object-fit: cover; 
+    display: block;
+}
+*/
+
+
+/* This rule removes the white spacing entirely and clips your square image to the rounded corners */
+.logo-box.flush {
+    padding: 0 !important;
+    overflow: hidden;
+    background-color: transparent !important;
+}
+
+/* Removes the internal spacing so images can go edge-to-edge */
+.logo-box.flush {
+    padding: 0 !important;
+    overflow: hidden;
+    background-color: transparent !important;
+}
+
+        .board-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .board-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--ole-miss-blue);
+            line-height: 1.3;
+        }
+
+        .board-description {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .chevron-icon {
+            color: var(--ole-miss-red);
+            display: flex;
+            align-items: center;
+            opacity: 0.7;
+        }
+
+        /* Defunct Sites Styling */
+        .defunct .logo-box {
+            border-color: #bbb;
+        }
+        .defunct .board-name {
+            color: #777;
+            text-decoration: line-through;
+        }
+        .defunct .badge {
+            background-color: #666;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            width: fit-content;
+            margin-top: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Fixed Mobile Floating Actions */
+        .action-dock {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 2000;
+        }
+
+        .fab-btn {
+            background-color: var(--ole-miss-red);
+            color: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(206, 17, 38, 0.4);
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .fab-btn:active {
+            background-color: #b00f20;
+            transform: scale(0.95);
+        }
+
+        /* Desktop Adjustments */
+        @media (min-width: 768px) {
+            .board-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 12px rgba(0, 107, 166, 0.15);
+                border-color: var(--ole-miss-red);
+            }
+            .board-card:hover .board-name {
+                color: var(--ole-miss-red);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Rebel Message Boards</h1>
+    </header>
+
+    <main class="app-container">
+        
+        <div class="section-title">Active Communities</div>
+        <ul class="board-list">
+           
+<!-------------------------------------------------->
+<!--         THE GROVE COLLECTIVE                 -->
+<!-------------------------------------------------->			
+            <li class="board-card">
+                <a href="https://thegrovecollective.com/" target="_blank" class="board-link">
+                    <div class="logo-box flush">
+                        <img src="images/the-grove-collective.jpg" alt="The Grove Collective">
+                    </div>
+                    <div class="board-info">
+                        <span class="board-name">The Grove Collective</span>
+                        <span class="board-description">Official Ole Miss NIL collective empowering Rebel athletes to dominate.</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+			
+<!--------------------------------------------------->
+<!--          OLE MISS REBELS SPORTS               -->
+<!--------------------------------------------------->	
+			<li class="board-card">
+                <a href="http://rebelsports.boardhost.com/index.php" target="_blank" class="board-link">
+                    <div class="logo-box flush">
+                        <img src="images/ole-miss-rebels-sports-5.png" alt="Ole Miss Rebels Sports"> 
+                    </div>
+                    <div class="board-info">
+                        <span class="board-name">Ole Miss Rebels Sports</span>
+                        <span class="board-description">An unofficial message board for Ole Miss Rebels fan discussion.</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+			
+<!-------------------------------------------------->
+<!--                   NAFOOM                     -->
+<!-------------------------------------------------->
+            <li class="board-card">
+                <a href="https://www.tapatalk.com/groups/nafoom/official-message-board-of-the-school-up-north-f1/" target="_blank" class="board-link">
+                    <div class="logo-box flush">
+                        <img src="images/nafoom-sq-border-215.png" alt="NAFOOM">
+                    </div>
+                    <div class="board-info">
+                        <span class="board-name">NAFOOM</span>
+                        <span class="board-description">Official message board of THE School Up North.</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+	
+<!-- NAFOOM with TEXT LOGO --> 	
+<!-- (BEGIN) 	
+		
+		<li class="board-card">
+    <a href="https://www.tapatalk.com/groups/nafoom/official-message-board-of-the-school-up-north-f1/" target="_blank" class="board-link">
+        
+        <div class="logo-box" style="background-color: #006BA6; display: flex; align-items: center; justify-content: center; padding: 2px; border: 2px solid #CE1126; border-radius: 8px;">
+            <span style="font-family: Arial, sans-serif; color: #ffffff; font-size: 0.75rem; font-weight: 900; letter-spacing: -0.5px; line-height: 1; text-align: center;">NAFOOM</span>
+        </div>
+        
+        <div class="board-info">
+            <span class="board-name">NAFOOM</span>
+            <span class="board-description">Official message board of THE School Up North.</span>
+        </div>
+        <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+    </a>
+</li>
+(END) -->
+			
+<!-------------------------------------------------->
+<!--          THE OLE MISS SPIRIT                 -->
+<!-------------------------------------------------->			
+            <li class="board-card">
+                <a href="https://www.on3.com/teams/ole-miss-rebels/" target="_blank" class="board-link">
+                    <div class="logo-box flush">
+                        <img src="images/om-spirit.png" alt="The Ole Miss Spirit">
+                    </div>
+                    <div class="board-info">
+                        <span class="board-name">The Ole Miss Spirit</span>
+                        <span class="board-description">On3 community featuring Chuck Rounsaville and Ben Garrett.</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+			
+<!-- THE OLE MISS SPIRIT with TEXT LOGO --> 	
+<!-- (BEGIN)
+<li class="board-card">
+    <a href="https://www.on3.com/teams/ole-miss-rebels/" target="_blank" class="board-link">
+        
+        <div class="logo-box" style="background-color: #CE1126; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 2px; border: 2px solid #006BA6;">
+            <span style="font-size: 1.15rem; font-weight: 900; letter-spacing: -1px; line-height: 1;">OM</span>
+            <span style="font-size: 0.65rem; font-weight: 800; letter-spacing: 0.5px; line-height: 1; margin-top: 2px;">SPIRIT</span>
+        </div>
+        
+        <div class="board-info">
+            <span class="board-name">The Ole Miss Spirit</span>
+            <span class="board-description">On3 community featuring Chuck Rounsaville and recruiting updates.</span>
+        </div>
+        <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+    </a>
+</li>
+(END) -->
+
+<!-------------------------------------------------->
+<!--                NEWS NOW                      -->
+<!-------------------------------------------------->
+            <li class="board-card">
+                <a href="https://www.newsnow.co.uk/h/Sport/US+Sports/NCAA+FB/SEC/Ole+Miss" target="_blank" class="board-link">
+                    <div class="logo-box flush">
+                        <img src="images/news-now-sq.png" alt="Ole Miss News Now">
+                    </div>
+                    <div class="board-info">
+                        <span class="board-name">Ole Miss News Now</span>
+                        <span class="board-description">Real-time aggregated structural feed of Rebels news.</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+
+<!-------------------------------------------------->
+<!--            OLE MISS SPORTS.COM               -->
+<!-------------------------------------------------->
+            <li class="board-card">
+                <a href="http://www.olemisssports.com/" target="_blank" class="board-link">
+                    <div class="logo-box">
+                        <img src="images/ole-miss-sports.png" alt="Ole Miss Sports Official Site">
+                    </div>
+                    <div class="board-info">
+                        <span class="board-name">Ole Miss Sports - Official Site</span>
+                        <span class="board-description">Official athletic site for schedules, rosters, and news.</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+			
+			
+<!-------------------------------------------------->
+<!--            247SPORTS - THE RG                -->
+<!-------------------------------------------------->
+            <li class="board-card">
+                <a href="https://247sports.com/college/ole-miss/" target="_blank" class="board-link">
+                    <div class="logo-box flush">
+                        <img src="images/rebels-247.jpg" alt="Inside the Rebels">
+                    </div>
+                    <div class="board-info">
+                        <span class="board-name">The RG (247Sports)</span>
+                        <span class="board-description">Insider recruiting, team analysis, and community boards.</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+
+
+<!-------------------------------------------------->
+<!--             BLEACHER REPORT                  -->
+<!-------------------------------------------------->
+            <li class="board-card">
+                <a href="http://bleacherreport.com/ole-miss-football" target="_blank" class="board-link">
+                    <div class="logo-box flush">
+                        <img src="images/bleacher-report-sq-border.png" alt="Bleacher Report">
+                    </div>
+                    <div class="board-info">
+                        <span class="board-name">Bleacher Report</span>
+                        <span class="board-description">Fast, breaking news metrics and curated team updates.</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+
+            <li class="board-card">
+                <a href="https://olehottytoddy.com/" target="_blank" class="board-link">
+                    <div class="logo-box flush">
+                        <img src="images/ole-hotty-toddy-sq-border.png" alt="Ole Hotty Toddy">
+                    </div>
+                    <div class="board-info">
+                        <span class="board-name">Ole Hotty Toddy</span>
+                        <span class="board-description">FanSided network perspective on sports, life, and views.</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+			
+			
+<!---------------------------------------------------------->
+<!--                REDCUP REBELLION                      -->
+<!---------------------------------------------------------->
+            <li class="board-card">
+                <a href="https://www.redcuprebellion.com/" target="_blank" class="board-link">
+                    <div class="logo-box flush">
+                        <img src="images/red-cup-rebellion.png" alt="Red Cup Rebellion">
+                    </div>
+                    <div class="board-info">
+                        <span class="board-name">Red Cup Rebellion</span>
+                        <span class="board-description">SB Nation fan community blending analytics with humor.</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+			
+
+<!---------------------------------------------------------->
+<!--              SATURDAY DOWN SOUTH                     -->
+<!---------------------------------------------------------->
+            <li class="board-card">
+                <a href="https://www.saturdaydownsouth.com/ole-miss-football/" target="_blank" class="board-link">
+                    <div class="logo-box flush">
+                        <img src="images/saturday-down-south.svg" alt="Saturday Down South">
+                    </div>
+                    <div class="board-info">
+                        <span class="board-name">Saturday Down South</span>
+                        <span class="board-description">Comprehensive SEC coverage focused on Rebels football.</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+			
+			
+<!---------------------------------------------------------->
+<!--                     SEC RANT                         -->
+<!---------------------------------------------------------->
+            <li class="board-card">
+                <a href="https://www.secrant.com/rant/ole-miss-sports/" target="_blank" class="board-link">
+                    <div class="logo-box flush">
+                        <img src="images/sec-rant-dot-com.png" alt="SEC Rant">
+					</div>
+					<div class="board-info">
+                        <span class="board-name">SEC Rant - Ole Miss Board</span>
+                        <span class="board-description">The ultimate unfiltered SEC sports community space.</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+
+
+<!---------------------------------------------------------->
+<!--                  THE REBEL WALK                      -->
+<!---------------------------------------------------------->
+            <li class="board-card">
+                <a href="http://therebelwalk.com/" target="_blank" class="board-link">
+                    <div class="logo-box flush">
+                        <img src="images/rebel-walk-sq-border.png" alt="The Rebel Walk">
+                    </div>
+	
+                    <div class="board-info">
+                        <span class="board-name">The Rebel Walk</span>
+                        <span class="board-description">Independent, detailed coverage and fan perspectives.</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+			
+			
+<!---------------------------------------------------------->
+<!--          SPORTS ILLUSTRATED - REBELS ON SI           -->
+<!---------------------------------------------------------->
+            <li class="board-card">
+                <a href="https://www.si.com/college/olemiss/" target="_blank" class="board-link">
+                    <div class="logo-box flush">
+                        <img src="images/sports-illustrated-ole-miss-on-si.png" alt="Inside the Grove">
+                    </div>
+                    <div class="board-info">
+                        <span class="board-name">Ole Miss Rebels on SI</span>
+                        <span class="board-description">Sports Illustrated's deep analysis and updates on Rebels athletics.</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+        </ul>
+
+
+
+        <div class="section-title">Defunct Forums</div>
+        <ul class="board-list defunct">
+            
+            <li class="board-card">
+                <a href="http://www.rebelfaithful.com/forums/" target="_blank" class="board-link">
+                    <div class="logo-box">
+                        <i data-lucide="alert-circle" style="color: #777;"></i>
+                    </div>
+                    <div class="board-info">
+                        <span class="board-name">Rebel Faithful</span>
+                        <span class="badge">Inactive</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+
+            <li class="board-card">
+                <a href="https://olemiss.forums.rivals.com/forums/hotty-toddy-talk.8/" target="_blank" class="board-link">
+                    <div class="logo-box">
+                        <i data-lucide="archive" style="color: #777;"></i>
+                    </div>
+                    <div class="board-info">
+                        <span class="board-name">Rivals - Hotty Toddy Talk</span>
+                        <span class="badge">Archived</span>
+                    </div>
+                    <div class="chevron-icon"><i data-lucide="chevron-right"></i></div>
+                </a>
+            </li>
+        </ul>
+
+    </main>
+
+    <div class="action-dock">
+        <button class="fab-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" aria-label="Scroll to top">
+            <i data-lucide="arrow-up"></i>
+        </button>
+        <button class="fab-btn" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" aria-label="Scroll to bottom">
+            <i data-lucide="arrow-down"></i>
+        </button>
+    </div>
+
+    <script>
+        // Initialize lightweight iconography
+        lucide.createIcons();
+    </script>
+</body>
+</html>
